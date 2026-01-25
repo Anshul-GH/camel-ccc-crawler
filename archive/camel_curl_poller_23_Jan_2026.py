@@ -7,7 +7,7 @@ import requests
 import subprocess
 from datetime import datetime
 from collections import OrderedDict
-import constants as const
+import camel3.constants as const
 
 def is_valid_asin(asin):
     return bool(re.match(r'^B[A-Z0-9]{9}$', asin))

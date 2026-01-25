@@ -1,0 +1,14 @@
+URL = 'https://camelcamelcamel.com/top_drops'
+SEEN_FILE = 'seen_urls.txt'
+TOP_FILE = 'top5.txt'
+POLL_INTERVAL = 30
+BOT_TOKEN = "8209964064:AAGV5vtHIyR4PiJb-w67Ld2VPpAC41Uzg8Q"
+CC_BOT_TOKEN = "8209964064:AAGV5vtHIyR4PiJb-w67Ld2VPpAC41Uzg8Q"
+PT_BOT_TOKEN = "8586957591:AAHT0S-2ADC-Y_SvxqtMuxHkTEJmjFJIWIU"
+CHAT_ID = "7574355748"
+CC_CHAT_ID = "7574355748"
+PT_CHAT_ID = "7574355748"
+WATCHLIST_FILE = "pt_watchlist.txt"
+STATE_FILE = "pt_prices.json"
+MIN_DROP_PCT = 30.0
+KEYWORDS = ['laptop', 'ssd', 'apple', 'monitor', 'tablet', 'phone', 'pixel']

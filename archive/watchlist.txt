@@ -1,0 +1,5 @@
+amazon https://www.amazon.com/gp/product/B0D69N7B87 179.98
+bestbuy https://www.bestbuy.com/product/apple-mac-mini-desktop-latest-model-m4-chip-built-for-apple-intelligence-16gb-memory-256gb-ssd-silver/JJGCQXH2S4 $599.00
+walmart https://www.walmart.com/ip/GP-APPLE-IPHONE-SE4-CDMA-LTE-HANDSET-ST-TO-WALMART-POSA/14822456361 $299.00
+metro https://www.metrobyt-mobile.com/cell-phone/apple-iphone-16e $99.99
+straighttalk https://www.straighttalk.com/all-phones/apple-iphone-16e-128gb-prepaid.black $299.00
