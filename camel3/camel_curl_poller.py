@@ -120,10 +120,16 @@ def parse_deals(html: str):
 
 def is_critical(deal):
     pct_str = deal['pct']
-    pct_match = re.search(r'(\d+)', pct_str)
+    # pct_match = re.search(r'(\d+)', pct_str)
+    # pct = float(pct_match.group(1)) if pct_match else 0
+    pct_match = re.search(r'(\d+(?:\.\d+)?)', pct_str.replace('%', ''))
     pct = float(pct_match.group(1)) if pct_match else 0
     name_lower = deal['name'].lower()
-    return pct >= const.MIN_DROP_PCT and any(kw.lower() in name_lower for kw in const.KEYWORDS)
+    # return pct >= const.MIN_DROP_PCT and any(kw.lower() in name_lower for kw in const.KEYWORDS)
+    has_drop = pct >= const.MIN_DROP_PCT
+    has_keyword = any(kw.lower() in name_lower for kw in const.KEYWORDS)
+    return has_drop or has_keyword
+
 
 def load_seen_urls(max_age_hours: int = 24):
     """
@@ -246,12 +252,15 @@ def notify_new(newdeals):
     regular = [d for d in newdeals if not is_critical(d)]
     
     if critical:
-        text = "*🔥 CRITICAL DEALS (>{const.MIN_DROP_PCT}% drop + keywords):*\n\n"
+        drop_pct = const.MIN_DROP_PCT
+        text = "*🔥 CRITICAL DEALS (>{drop_pct} percent drop OR keywords):*\n\n"
         for d in critical:
             text += f"*{d['name']}*\n{d['pricechange']} ({d['pct']})\n{d['amazon_url']}\n\n"
+            # text += f"*{d['name']}*\n{d['pricechange']} ({d['pct']})\n{d['amazon_url']}\n\n"
             # Add: text = text.replace('\\', '\\\\').replace('_', '\\_') before requests.post
 
         try:
+            text = text.replace('_', '\\_').replace('[', '\\[')[:4000]
             requests.post(api_url, data={
                 'chat_id': const.CC_CHAT_ID, 
                 'text': text, 
@@ -266,6 +275,7 @@ def notify_new(newdeals):
         for deal in regular:
             text = f"{deal['name']}\n{deal['pricechange']} ({deal['pct']})\n{deal['amazon_url']}"
             try:
+                text = text.replace('_', '\\_').replace('[', '\\[')[:4000]
                 requests.post(api_url, data={
                     'chat_id': const.CC_CHAT_ID, 
                     'text': text, 
