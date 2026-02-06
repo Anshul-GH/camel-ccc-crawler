@@ -19,3 +19,29 @@ cp constants.py constants.py.bak.$(date +%Y%m%d_%H%M).py
 
 7. Restart the service
 sudo systemctl restart amazon-price-tracker
+
+8. Remove unwanted files:
+rm -f ~/robust-price-tracker/amazon_price_tracker.py.bak* amazon_watchlist.bak __pycache__/*
+
+
+Instructions (AI):
+cd ~/robust-price-tracker
+
+# Stop service
+sudo systemctl stop amazon-price-tracker
+
+# Verify stopped
+sudo systemctl status amazon-price-tracker --no-pager -l
+
+# Start service  
+sudo systemctl start amazon-price-tracker
+
+# Check status
+sudo systemctl status amazon-price-tracker --no-pager -l
+
+# Tail your new logs!
+tail -f amazon_tracker.log
+
+
+# SSH into rpi
+ssh poorva@192.168.1.52
