@@ -116,57 +116,6 @@ def fetch_all_rss():
     print(f"[DEBUG] Combined {len(all_items)} → {len(unique_items)} unique deals")
     return unique_items
 
-
-# def parse_items(xml_text: str, source: str = "RSS"):
-#     """
-#     Parse single RSS feed. Returns items with likes >= MIN_LIKES.
-#     """
-#     ns = {"slash": "http://purl.org/rss/1.0/modules/slash/"}
-#     root = ET.fromstring(xml_text)
-#     items = []
-
-#     all_items = root.findall(".//item")
-#     print(f"[DEBUG] {source}: {len(all_items)} items found")
-
-#     for idx, item in enumerate(all_items[:20]):  # Limit to newest 20
-#         title = (item.findtext("title") or "").strip()
-#         link = (item.findtext("link") or "").strip()
-
-#         likes_text = (
-#             item.findtext("slash:comments", namespaces=ns)
-#             or item.findtext("comments")
-#             or item.findtext("{http://purl.org/rss/1.0/modules/slash/}comments")
-#             or "0"
-#         )
-
-#         try:
-#             likes = int(likes_text)
-#         except ValueError:
-#             likes = 0
-
-#         if not link or likes < const.MIN_LIKES:
-#             continue
-
-#         # Add after likes calculation, before appending:
-#         junk_keywords = ['Sample', 'Survey', 'Giveaway', 'Sweepstakes', 'Contest', 'Freebie', 'Free ', 'Expired', 'Expired:', 'Expired -', 'Expired –']
-#         if any(kw in title.upper() for kw in junk_keywords):
-#             continue
-
-#         # Prefer deals with prices
-#         if '$' not in title:
-#             continue
-
-#         items.append({
-#             "title": title,
-#             "link": link,
-#             "likes": likes,
-#             "ref_link": referral_link(link, const.SD_USERID),
-#             "source": source
-#         })
-
-#     print(f"[DEBUG] {source}: {len(items)} qualifying (>= {const.MIN_LIKES} likes)")
-#     return items
-
 def parse_items(xml_text, source):
     """Parse single RSS feed. Returns ALL items (MIN_LIKES=0 strategy)."""
     ns = {'slash': 'http://purl.org/rss/1.0/modules/slash/'}
@@ -222,88 +171,32 @@ def filter_new(items, seen):
     """Return only items whose original link is not in seen."""
     return [it for it in items if it["link"] not in seen]
 
-
-# Fancy Text
-# def send_sd_alerts(items):
-#     """Send Telegram alerts - split if too long."""
-#     if not items:
-#         return
-
-#     api_url = f"https://api.telegram.org/bot{const.SD_BOTTOKEN}/sendMessage"
-    
-#     # Split into chunks of 8 deals max
-#     chunk_size = 8
-#     for i in range(0, len(items), chunk_size):
-#         chunk = items[i:i+chunk_size]
-#         lines = [f"🔥 Slickdeals ({len(chunk)} new deals - Frontpage/Popular):"]
-        
-#         for it in chunk:
-#             title = it["title"].replace("[", "(").replace("]", ")")[:80]
-#             lines.append(f"*{title}* ({it['likes']} 👍)")
-#             lines.append(it["ref_link"])
-#             lines.append("")
-        
-#         text = "\n".join(lines)[:4000]
-        
-#         try:
-#             r = requests.post(api_url, data={
-#                 "chat_id": const.SD_CHATID,
-#                 "text": text,
-#                 "parse_mode": "Markdown",
-#                 "disable_web_page_preview": False,
-#             }, timeout=10)
-#             print(f"[telegram] Sent chunk {i//chunk_size+1} ({len(chunk)} deals)")
-#         except Exception as e:
-#             print(f"[telegram] Error: {e}")
-
-# URLs alone
-# def send_sd_alerts(items):
-#     """Send ONLY URLs to Telegram - no headers, no counts."""
-#     if not items:
-#         return
-    
-#     api_url = f"https://api.telegram.org/bot{const.SD_BOTTOKEN}/sendMessage"
-#     chunk_size = 8
-    
-#     for i in range(0, len(items), chunk_size):
-#         chunk = items[i:i+chunk_size]
-        
-#         # Just URLs - one per line
-#         text = "\n".join([it["ref_link"] for it in chunk])
-        
-#         try:
-#             r = requests.post(api_url, data={
-#                 "chat_id": const.SD_CHATID,
-#                 "text": text,
-#                 "parse_mode": "Markdown",
-#                 "disable_web_page_preview": False,
-#             }, timeout=10)
-#             print(f"[telegram] Sent chunk {i//chunk_size+1} ({len(chunk)} URLs)")
-#         except Exception as e:
-#             print(f"[telegram] Error: {e}")
-
 def send_sd_alerts(items):
-    """Send ONLY URLs to ALL chats (private + group)."""
+    """Send EACH URL as SEPARATE message to ALL chats WITH LINK PREVIEWS."""
     if not items:
         return
         
     api_url = f"https://api.telegram.org/bot{const.SD_BOTTOKEN}/sendMessage"
-    chunk_size = 8
     
-    for i in range(0, len(items), chunk_size):
-        chunk = items[i:i+chunk_size]
-        text = "\n".join([it["ref_link"] for it in chunk])
+    for item in items:
+        ref_link = item["ref_link"]
+        title_short = item["title"][:100]
         
-        # Send to EVERY chat ID
+        # Send to EVERY chat ID (group + private)
         for chat_id in const.SD_CHATIDS:
             try:
+                text = f"🔥 {title_short}\n{ref_link}"
+                
                 r = requests.post(api_url, data={
                     "chat_id": chat_id,
                     "text": text,
                     "parse_mode": "Markdown",
                     "disable_web_page_preview": False,
                 }, timeout=10)
-                print(f"[telegram] → {chat_id} ({len(chunk)} URLs)")
+                print(f"[telegram] → {chat_id}: {title_short[:50]}... (w/ preview)")
+                
+                time.sleep(0.5)  # Rate limit protection
+                
             except Exception as e:
                 print(f"[telegram] {chat_id} ERROR: {e}")
 

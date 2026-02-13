@@ -6,6 +6,7 @@ ps aux | grep amazon_price_tracker.py
 
 3. Stop the running service
 sudo systemctl stop amazon-price-tracker
+sudo systemctl stop sd-rss-poller.service 
 
 4. Updated the watchlist
 nano amazon_watchlist.txt
